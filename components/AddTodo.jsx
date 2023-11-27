@@ -9,7 +9,7 @@ import {
     useToast,
 } from "@chakra-ui/react";
 import useAuth from "../hooks/useAuth";
-import { addTodo } from "../api/todo";
+import { addTodo } from "@/api/todo";
 const AddTodo = () => {
     const [title, setTitle] = React.useState("");
     const [description, setDescription] = React.useState("");
@@ -42,6 +42,8 @@ const AddTodo = () => {
         toast({ title: "Todo created successfully", status: "success" });
     };
     return (
+        <>
+            <h2 className="text-center mt-5">To-do List</h2>
         <Box w="40%" margin={"0 auto"} display="block" mt={5}>
             <Stack direction="column">
                 <Input
@@ -71,13 +73,14 @@ const AddTodo = () => {
                 <Button
                     onClick={() => handleTodoCreate()}
                     disabled={title.length < 1 || description.length < 1 || isLoading}
-                    variantColor="teal"
+                    variantcolor="teal"
                     variant="solid"
                 >
                     Add
                 </Button>
             </Stack>
         </Box>
+        </>
     );
 };
 export default AddTodo;
