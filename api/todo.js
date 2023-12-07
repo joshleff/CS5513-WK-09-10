@@ -5,11 +5,13 @@ import {
     updateDoc,
     doc,
     deleteDoc,
+    setDoc
 } from "firebase/firestore";
+
 const addTodo = async ({ userId, title, description, status }) => {
     try {
-        await addDoc(collection(db, "todo"), {
-            user: userId,
+        await addDoc(collection(db, userId), {
+            type: "todo",
             title: title,
             description: description,
             status: status,
@@ -17,9 +19,10 @@ const addTodo = async ({ userId, title, description, status }) => {
         });
     } catch (err) {}
 };
-const toggleTodoStatus = async ({ docId, status }) => {
+const toggleTodoStatus = async ({ user, docId, status }) => {
+
     try {
-        const todoRef = doc(db, "todo", docId);
+        const todoRef = await doc(db, user.uid, docId);
         await updateDoc(todoRef, {
             status,
         });
@@ -27,9 +30,10 @@ const toggleTodoStatus = async ({ docId, status }) => {
         console.log(err);
     }
 };
-const deleteTodo = async (docId) => {
+const deleteTodo = async (user, docId) => {
+
     try {
-        const todoRef = doc(db, "todo", docId);
+        const todoRef = doc(db, user, docId);
         await deleteDoc(todoRef);
     } catch (err) {
         console.log(err);

@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Button, Link, Text} from "@chakra-ui/react";
 import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import { FaGoogle, FaMoon, FaSun } from "react-icons/fa";
+import { FaGoogle } from "react-icons/fa";
 import { auth } from "@/lib/firebase";
 import useAuth from "../hooks/useAuth";
 const Auth = () => {
@@ -29,7 +29,7 @@ const Auth = () => {
             });
     };
     return (
-        <Box position={"fixed"} top="5%" right="5%">
+        <Box zIndex={50} position={"fixed"} top="5%" right="5%">
 
             {isLoggedIn && (
                 <>

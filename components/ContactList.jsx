@@ -8,38 +8,44 @@ import {
 } from "@chakra-ui/react";
 import React, { useEffect } from "react";
 import useAuth from "../hooks/useAuth";
-import { collection, onSnapshot, query, where } from "firebase/firestore";
+import {collection, deleteDoc, doc, onSnapshot, query, where} from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { FaToggleOff, FaToggleOn, FaTrash } from "react-icons/fa";
-import { deleteTodo } from "@/api/todo";
 import Link from "next/link";
-const TodoList = () => {
-    const [todos, setTodos] = React.useState([]);
+const ContactList = () => {
+    const [contacts, setContacts] = React.useState([]);
+    const {  user } = useAuth();
     const toast = useToast();
-    const { isLoggedIn, user} = useAuth();
-    console.log(user);
     const refreshData = () => {
         if (!user) {
-            setTodos([]);
+            setContacts([]);
             return;
         }
-        const q = query(collection(db, user.uid), where("type", "==", "todo"));
-        onSnapshot(q, (querySnapshot) => {
+        const q = query(collection(db, user.uid), where("type", "==", "contact"));
+        onSnapshot(q, (querySnapchot) => {
             let ar = [];
-            querySnapshot.docs.forEach((doc) => {
+            querySnapchot.docs.forEach((doc) => {
                 ar.push({ id: doc.id, ...doc.data() });
             });
-            setTodos(ar);
-            console.log(ar);
+            setContacts(ar);
         });
     };
     useEffect(() => {
         refreshData();
     }, [user]);
-    const handleTodoDelete = async (user, id) => {
-        if (confirm("Are you sure you wanna delete this todo?")) {
-            await deleteTodo(user, id);
-            toast({ title: "Todo deleted successfully", status: "success" });
+    const deleteContact = async (user, docId) => {
+
+        try {
+            const todoRef = doc(db, user, docId);
+            await deleteDoc(todoRef);
+        } catch (err) {
+            console.log(err);
+        }
+    };
+    const handleContactDelete = async (user, id) => {
+        if (confirm("Are you sure you wanna delete this contact?")) {
+            await deleteContact(user, id);
+            toast({ title: "Contact deleted successfully", status: "success" });
         }
     };
 
@@ -47,8 +53,10 @@ const TodoList = () => {
 
         <Box mt={5}>
 
-                {todos &&
-                    todos.map((todo) => (
+                {contacts &&
+                    contacts
+                        .sort((a, b) => a.name > b.name ? 1 : -1 )
+                        .map((contact) => (
                         <Box
                             p={3}
                             boxShadow="2xl"
@@ -60,7 +68,7 @@ const TodoList = () => {
                             w={[300,500,600]}
                         >
                             <Heading as="h3" fontSize={"xl"}>
-                                {todo.title}{" "}
+                                {contact.name}{" "}
                                 <Badge
                                     color="red.500"
                                     bg="inherit"
@@ -71,22 +79,26 @@ const TodoList = () => {
                                     }}
                                     float="right"
                                     size="xs"
-                                    onClick={() => handleTodoDelete(user.uid, todo.id)}
+                                    onClick={() => handleContactDelete(user.uid, contact.id)}
                                 >
                                     <FaTrash />
                                 </Badge>
 
-                            </Heading>
-                            <Text>{todo.description}</Text>
-                            <Link key={todo.id} href={`todo/${todo.id}`}
-                                  >
 
-                            Edit
+                            </Heading>
+                            <Text>{contact.number}</Text>
+                            <Text>{contact.email}</Text>
+                            <Text>{contact.relationship}</Text>
+
+                            <Link key={contact.id} href={`contact/${contact.id}`}
+                            >
+                                Edit
                             </Link>
                         </Box>
                     ))}
+
         </Box>
 
     );
 };
-export default TodoList;
+export default ContactList;

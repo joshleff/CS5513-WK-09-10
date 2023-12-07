@@ -9,18 +9,19 @@ import {
     useToast,
 } from "@chakra-ui/react";
 import useAuth from "../hooks/useAuth";
-import { addTodo } from "@/api/todo";
-const AddTodo = () => {
+import {addDoc, collection} from "firebase/firestore";
+import {db} from "@/lib/firebase";
+const AddEvent = () => {
     const [title, setTitle] = React.useState("");
     const [description, setDescription] = React.useState("");
-    const [status, setStatus] = React.useState("pending");
+    const [date, setDate] = React.useState("");
     const [isLoading, setIsLoading] = React.useState(false);
     const toast = useToast();
     const { isLoggedIn, user } = useAuth();
-    const handleTodoCreate = async () => {
+    const handleEventCreate = async () => {
         if (!isLoggedIn) {
             toast({
-                title: "You must be logged in to create a todo",
+                title: "You must be logged in to create a event",
                 status: "error",
                 duration: 9000,
                 isClosable: true,
@@ -28,22 +29,33 @@ const AddTodo = () => {
             return;
         }
         setIsLoading(true);
-        const todo = {
+        const event = {
+            userId: user.uid,
             title,
             description,
-            status,
-            userId: user.uid,
+            date
         };
-        await addTodo(todo);
+        const addEvent = async ({ userId, title, description, date }) => {
+            try {
+                await addDoc(collection(db, userId), {
+                    type: "event",
+                    title: title,
+                    description: description,
+                    date: date,
+                    createdAt: new Date().getTime(),
+                });
+            } catch (err) {}
+        };
+        await addEvent(event);
         setIsLoading(false);
         setTitle("");
         setDescription("");
-        setStatus("pending");
-        toast({ title: "Todo created successfully", status: "success" });
+        setDate("");
+        toast({ title: "Event created successfully", status: "success" });
     };
     return (
         <>
-            <h2 className="text-center mt-5">To-do List</h2>
+            <h2 className="text-center mt-5">Events</h2>
             <Box w={[300,400,500]} margin={"0 auto"} display="block" mt={5}>
                 <Stack direction="column">
                     <Input
@@ -56,9 +68,14 @@ const AddTodo = () => {
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                     />
-
+                    <Input
+                        placeholder="Select Date and Time"
+                        size="md"
+                        type="datetime-local"
+                        value={date} onChange={(e) => setDate(e.target.value)}
+                    />
                     <Button
-                        onClick={() => handleTodoCreate()}
+                        onClick={() => handleEventCreate()}
                         disabled={title.length < 1 || description.length < 1 || isLoading}
                         variantcolor="teal"
                         variant="solid"
@@ -70,4 +87,4 @@ const AddTodo = () => {
         </>
     );
 };
-export default AddTodo;
+export default AddEvent;
